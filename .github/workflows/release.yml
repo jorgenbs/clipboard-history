@@ -15,7 +15,7 @@ jobs:
       HAS_CERT: ${{ secrets.MACOS_SIGNING_CERT_P12 != '' }}
       HAS_TAP_KEY: ${{ secrets.TAP_DEPLOY_KEY != '' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

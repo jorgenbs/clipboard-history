@@ -50,7 +50,7 @@ cask "clipboard-history" do
     Clipboard History lives in the menu bar. Open it with ⌥⌘C.
 
     Installing and upgrading need HOMEBREW_GITHUB_API_TOKEN set to a token that can read
-    jorgenbs/clipboard-history (e.g. `HOMEBREW_GITHUB_API_TOKEN=$(gh auth token)`).
+    jorgenbs/clipboard-history, for example: HOMEBREW_GITHUB_API_TOKEN=\$(gh auth token) brew upgrade
 
     Auto-paste needs Accessibility access:
       System Settings › Privacy & Security › Accessibility › enable "Clipboard History"
