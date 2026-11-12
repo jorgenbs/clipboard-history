@@ -1,107 +1,112 @@
+<div align="center">
+
+<img src="docs/images/icon.png" width="112" alt="Clipboard History icon">
+
 # Clipboard History
 
-A small macOS menu bar app for clipboard history, inspired by Alfred's clipboard feature.
+### Everything you copied, one keystroke away.
 
-- **⌥⌘C** (configurable) opens a floating overlay. The search field is focused, your clips are listed on the left, and a preview of the selected clip is on the right.
-- Type to filter, use **↑/↓** to move, and press **Return** to paste into the app you were using.
-- **⌘1–⌘9** paste a row directly. **⌘⌫** deletes the selected clip. **Esc** or a click outside closes the overlay.
-- Records plain text, rich text, links and images (shown as `img`). File copies are skipped.
-- **Never records** copies from sensitive apps (1Password, Proton Pass, Passwords, Keychain Access, …) or data marked as concealed, transient or auto-generated ([nspasteboard.org](http://nspasteboard.org) markers).
-- Keeps the last 500 clips (configurable), stored in `~/Library/Application Support/ClipboardHistory`. Images over 10 MB are skipped.
-- All settings live in the menu bar: shortcut, history size, ignored apps, launch at login, pause recording and clear history.
+A tiny menu bar clipboard manager for macOS.<br>
+Search as you type. Preview before you paste. Nothing from your password manager.
 
-## Install
+[![Latest release](https://img.shields.io/github/v/release/jorgenbs/clipboard-history?color=7c3aed&label=release)](https://github.com/jorgenbs/clipboard-history/releases/latest)
+[![CI](https://img.shields.io/github/actions/workflow/status/jorgenbs/clipboard-history/ci.yml?branch=main&label=CI&logo=github)](https://github.com/jorgenbs/clipboard-history/actions/workflows/ci.yml)
+![Platform macOS 14+](https://img.shields.io/badge/platform-macOS%2014%2B-111111?logo=apple&logoColor=white)
+![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
+![Dependencies zero](https://img.shields.io/badge/dependencies-zero-22c55e)
+[![Homebrew tap](https://img.shields.io/badge/brew-jorgenbs%2Ftap-FBB040?logo=homebrew&logoColor=white)](https://github.com/jorgenbs/homebrew-tap)
 
-Both this repo and the tap are **private**: this is for my own Macs only, since a self-signed app with
-Accessibility access isn't something to hand to others. That means:
+</div>
 
-- the tap is cloned over SSH (your normal GitHub SSH key), and
-- the cask downloads the release zip through the GitHub API with `HOMEBREW_GITHUB_API_TOKEN`.
+---
+
+You copied it ten minutes ago. Since then you've copied four other things, and now it's gone.
+
+**Press ⌥⌘C. Type a few letters. Hit Return. It's pasted where you were.**
+
+Clipboard History runs quietly in the menu bar and remembers what you copy: text, rich text, links and images. It deliberately forgets anything that comes from a password manager or is marked as secret.
+
+<p align="center">
+  <img src="docs/images/overlay-dark.png" width="760" alt="Clipboard History overlay: search field and clip list on the left, preview of the selected code snippet on the right">
+</p>
+
+## What it does
+
+| | |
+| :--- | :--- |
+| **Instant overlay** | ⌥⌘C (configurable) opens a floating panel with the search field already focused, so you can start typing right away. |
+| **Search + preview** | Clips on the left, a full preview on the right. Long text scrolls, rich text keeps its formatting, and images show at full size. |
+| **Auto-paste** | Return pastes into the app you came from. ⌘1–⌘9 paste a row directly. |
+| **Private by default** | Skips 1Password, Proton Pass, Passwords, Keychain Access and Wallet. Never records data marked *concealed*, *transient* or *auto-generated* ([nspasteboard.org](http://nspasteboard.org)). |
+| **No file clutter** | File copies from Finder are skipped. Images are labelled `img` and shown with a thumbnail. |
+| **Menu bar settings** | Change the shortcut, history size (100–5000), ignored apps and launch at login. Pause recording or clear history. |
+
+<p align="center">
+  <img src="docs/images/overlay-light.png" width="760" alt="Clipboard History overlay in light mode previewing an image clip">
+</p>
+
+## Get it
 
 ```sh
-gh auth login                                   # once per machine, if needed
-brew tap jorgenbs/tap git@github.com:jorgenbs/homebrew-tap.git
-HOMEBREW_GITHUB_API_TOKEN=$(gh auth token) brew install --cask jorgenbs/tap/clipboard-history
+brew install --cask jorgenbs/tap/clipboard-history
 open "/Applications/Clipboard History.app"
 ```
 
-So `brew upgrade` works without thinking about it, export the token for brew only. In fish
-(`~/.config/fish/conf.d/homebrew-github-token.fish`):
+**Accessibility (for auto-paste).** On first launch, the app asks for Accessibility access. Turn it on in System Settings › Privacy & Security › Accessibility. Until then, Return copies the clip and you paste with ⌘V yourself.
 
-```fish
-function brew --wraps brew
-    HOMEBREW_GITHUB_API_TOKEN=(gh auth token 2>/dev/null) command brew $argv
-end
-```
+> [!NOTE]
+> The app is **self-signed, not notarized** (no paid Apple Developer account). The cask removes the quarantine flag so it opens without a Gatekeeper prompt. If macOS still blocks it, go to Privacy & Security and click **Open Anyway**. Read the source and build it yourself if you'd rather not trust a binary: it's about 2,000 lines of Swift with no dependencies.
 
-Without the token the download fails with a 404 (GitHub hides private assets).
+Releases are signed with the same certificate, so the Accessibility grant normally survives upgrades. If auto-paste ever stops working (the app is still listed and switched on, but nothing gets pasted), remove the app from the Accessibility list with **–** and add it again.
 
-### First launch
+## Keys
 
-1. **Gatekeeper.** The app is self-signed, not notarized. The cask removes the quarantine flag so it opens normally. If macOS still blocks it, go to System Settings › Privacy & Security and click **Open Anyway**.
-2. **Accessibility (for auto-paste).** On first launch the app asks for Accessibility access. Turn it on under System Settings › Privacy & Security › Accessibility. Until then, Return copies the clip to your clipboard and you paste it yourself with ⌘V. The menu bar shows a warning item while access is missing.
+| Key | Action |
+| :--- | :--- |
+| ⌥⌘C | Open / close the overlay |
+| *type* | Filter clips (text content; images match `img` or the app name) |
+| ↑ ↓ · Page Up/Down | Move the selection |
+| Return | Paste the selected clip |
+| ⌘1 – ⌘9 | Paste that row |
+| ⌘⌫ | Delete the selected clip |
+| Esc · click outside | Close without pasting |
 
-### After upgrading
+## Privacy
 
-Releases are signed with the same self-signed certificate, so macOS normally keeps the Accessibility grant. If auto-paste stops working (the app is still listed and switched on, but nothing gets pasted), the grant is stale. Select the app in the Accessibility list, remove it with **–**, then add it again (or relaunch the app and accept the prompt).
-
-## Known limitations
-
-- **Passwords copied from browser extensions** (1Password or Proton Pass in the browser, Safari/Chrome password managers) are skipped only if the extension marks the copy as concealed. The frontmost app is the browser, so the ignored-apps list can't catch them. That marking is the extension's job.
-- Only the first pasteboard item is recorded (multi-item copies are rare outside Finder).
-- Proton Mail's bundle ID in the default ignore list (`ch.protonmail.desktop`) hasn't been verified. Check it with "Add Running App" in settings.
+- History is stored locally in `~/Library/Application Support/ClipboardHistory`. Nothing leaves your Mac.
+- By default it keeps the last 500 clips. Images over 10 MB are skipped.
+- The app never records copies from ignored apps, or anything marked concealed, transient or auto-generated. Most password managers mark what they copy.
+- **Known gap:** a password copied from a *browser extension* is skipped only if the extension marks it as concealed. In that case the frontmost app is the browser, so the ignored-apps list can't catch it.
 
 ## Development
 
-Needs Swift 6 (Command Line Tools are enough; Xcode isn't required).
+Needs Swift 6. Command Line Tools are enough; Xcode is optional.
 
 ```sh
-swift test                               # unit tests (capture filter, store, search)
-swift build && .build/debug/ClipboardHistory   # run unbundled (Accessibility won't stick)
-UNIVERSAL=0 ./scripts/bundle.sh          # build/Clipboard History.app, ad-hoc signed
+swift test                                     # capture filter, store, search
+swift build && .build/debug/ClipboardHistory   # run unbundled
+UNIVERSAL=0 ./scripts/bundle.sh                # build/Clipboard History.app (ad-hoc signed)
 ```
-
-Useful while developing:
 
 - `CLIPBOARD_HISTORY_DATA_DIR=/tmp/ch …` uses a scratch history instead of your real one.
 - `--show` opens the overlay on launch.
-- Debug builds only: `--snapshot out.png [--dark] [--query text] [--select n]` renders the overlay to a PNG and exits.
-- `swift scripts/make-icon.swift` regenerates `Resources/AppIcon.icns`.
-
-Layout:
+- Debug builds only: `--demo --snapshot out.png [--dark] [--select n]` renders the overlay with sample clips. That's how the screenshots above are made.
 
 | Path | What |
-| --- | --- |
-| `Sources/ClipboardCore` | AppKit-free logic: `CaptureFilter`, `ClipFactory`, `ClipStore`, `ClipSearch` |
-| `Sources/ClipboardHistory` | The app: pasteboard monitor, hotkey, overlay panel, paste, menu bar, settings |
-| `scripts/` | Bundling, signing-cert and cask helpers |
+| :--- | :--- |
+| `Sources/ClipboardCore` | AppKit-free logic: `CaptureFilter`, `ClipFactory`, `ClipStore`, `ClipSearch` (unit tested) |
+| `Sources/ClipboardHistory` | The app: pasteboard monitor, Carbon hotkey, overlay panel, paste, menu bar, settings |
+| `scripts/` | App bundling, signing certificate and cask helpers |
 
 ## Releasing
 
-### One-time setup
-
-Already done for `jorgenbs/clipboard-history` and `jorgenbs/homebrew-tap` (both private). For reference:
-
-1. **Repos.** `jorgenbs/clipboard-history` (this repo) and `jorgenbs/homebrew-tap` (with a `Casks/` folder), both private.
-2. **Tap deploy key.** CI pushes cask updates with a write-enabled deploy key that only works on the tap:
-   ```sh
-   ssh-keygen -t ed25519 -N "" -C "clipboard-history release" -f /tmp/tap_key
-   gh repo deploy-key add /tmp/tap_key.pub -R jorgenbs/homebrew-tap --allow-write -t "clipboard-history release"
-   gh secret set TAP_DEPLOY_KEY -R jorgenbs/clipboard-history < /tmp/tap_key && rm /tmp/tap_key*
-   ```
-   Without it, releases still work: the workflow prints the updated cask in the job summary for you to commit by hand.
-3. **Signing certificate.** Create it and store it as Actions secrets on this repo:
-   ```sh
-   ./scripts/create-signing-cert.sh --set-secrets
-   ```
-   This writes `signing/` (gitignored). Back up `signing/ClipboardHistory.p12` and `signing/password.txt` (for example in 1Password). Losing them means a new certificate, which means re-granting Accessibility once.
-
-### Each release
-
 ```sh
-git tag v0.1.0 && git push origin v0.1.0
+git tag v0.2.0 && git push origin v0.2.0
 ```
 
-The `Release` workflow runs the tests, builds a universal (arm64 + x86_64) app, signs it, publishes `ClipboardHistory-<version>.zip` to GitHub Releases, and updates `Casks/clipboard-history.rb` in the tap with the asset's API URL and checksum. Then `brew update && brew upgrade --cask clipboard-history` picks it up.
+The `Release` workflow runs the tests, builds a universal (arm64 + x86_64) app, signs it with the self-signed certificate, publishes the zip to GitHub Releases, and updates the cask in [jorgenbs/homebrew-tap](https://github.com/jorgenbs/homebrew-tap).
 
-The `CI` workflow only runs on pull requests or by hand (`gh workflow run CI`), because macOS runner minutes count 10x against the private-repo quota.
+One-time setup (already done):
+
+- `./scripts/create-signing-cert.sh --set-secrets` creates the certificate and stores it as the `MACOS_SIGNING_CERT_P12` and `MACOS_SIGNING_CERT_PASSWORD` secrets. Back up `signing/`; losing it means everyone re-grants Accessibility once.
+- `TAP_DEPLOY_KEY` is a write deploy key on the tap, which CI uses to push cask updates. Without it, the workflow prints the cask in the job summary instead.

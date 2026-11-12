@@ -120,6 +120,10 @@ The menu bar icon opens a menu with:
 > `Authorization: Bearer $HOMEBREW_GITHUB_API_TOKEN`. CI updates the tap with a write deploy key
 > (`TAP_DEPLOY_KEY`) instead of a personal token. Where the text below says "public", this update
 > takes precedence.
+>
+> **Update 2026-11-12, later:** the user reversed this, and both repos are **public** again. The cask uses
+> the plain GitHub Releases URL, and the private-download setup above no longer applies. CI still updates the tap
+> with the deploy key.
 
 - Source lives in this repo and will be pushed to a **public** GitHub repo `jorgenbs/clipboard-history`.
 - The tap is a **public** repo `jorgenbs/homebrew-tap`. **It doesn't exist yet.** The plan includes creating it (with a README and `Casks/`), and the user is asked before anything is created on GitHub. Install command: `brew install --cask jorgenbs/tap/clipboard-history`.

@@ -1,9 +1,10 @@
 name: CI
 
-# Manual / PR only: macOS runner minutes are expensive on private repos (10x multiplier).
 on:
-  workflow_dispatch:
+  push:
+    branches: [main]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:

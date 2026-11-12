@@ -50,10 +50,6 @@ jobs:
         run: |
           gh release create "$GITHUB_REF_NAME" "build/ClipboardHistory-${VERSION}.zip" \
             --title "Clipboard History ${VERSION}" --generate-notes
-          # Private repo: the cask downloads through the API asset URL with a token.
-          ASSET_URL=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${GITHUB_REF_NAME}" \
-            --jq '.assets[] | select(.name == "ClipboardHistory-'"${VERSION}"'.zip") | .url')
-          echo "ASSET_URL=$ASSET_URL" >> "$GITHUB_ENV"
 
       - name: Update Homebrew cask
         if: env.HAS_TAP_KEY == 'true'
@@ -67,7 +63,7 @@ jobs:
           export GIT_SSH_COMMAND="ssh -i $KEY_FILE -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
           git clone git@github.com:jorgenbs/homebrew-tap.git tap
           mkdir -p tap/Casks
-          ./scripts/render-cask.sh "$VERSION" "$SHA256" "$ASSET_URL" > tap/Casks/clipboard-history.rb
+          ./scripts/render-cask.sh "$VERSION" "$SHA256" > tap/Casks/clipboard-history.rb
           cd tap
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -82,7 +78,7 @@ jobs:
           {
             echo '### Casks/clipboard-history.rb'
             echo '```ruby'
-            ./scripts/render-cask.sh "$VERSION" "$SHA256" "$ASSET_URL"
+            ./scripts/render-cask.sh "$VERSION" "$SHA256"
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 

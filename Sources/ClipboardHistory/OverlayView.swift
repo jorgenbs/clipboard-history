@@ -120,7 +120,7 @@ struct ClipRow: View {
                     .padding(.horizontal, 5).padding(.vertical, 1)
                     .background(RoundedRectangle(cornerRadius: 4).fill(isSelected ? Color.white.opacity(0.25) : Color.secondary.opacity(0.2)))
                 if let w = clip.pixelWidth, let h = clip.pixelHeight {
-                    Text("\(w)×\(h)").foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
+                    Text(verbatim: "\(w)×\(h)").foregroundStyle(isSelected ? .white.opacity(0.8) : .secondary)
                 }
             } else {
                 Text(clip.title)
