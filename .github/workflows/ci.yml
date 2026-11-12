@@ -1,0 +1,16 @@
+name: CI
+
+# Manual / PR only: macOS runner minutes are expensive on private repos (10x multiplier).
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run tests
+        run: swift test
+      - name: Build app bundle (host arch, ad-hoc signed)
+        run: UNIVERSAL=0 ./scripts/bundle.sh

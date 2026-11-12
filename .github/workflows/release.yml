@@ -1,0 +1,91 @@
+name: Release
+
+# Push a tag like v0.1.0 to build, sign, publish a GitHub Release and update the Homebrew cask.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-15
+    env:
+      HAS_CERT: ${{ secrets.MACOS_SIGNING_CERT_P12 != '' }}
+      HAS_TAP_KEY: ${{ secrets.TAP_DEPLOY_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      - name: Run tests
+        run: swift test
+
+      - name: Import self-signed certificate
+        if: env.HAS_CERT == 'true'
+        env:
+          MACOS_SIGNING_CERT_P12: ${{ secrets.MACOS_SIGNING_CERT_P12 }}
+          MACOS_SIGNING_CERT_PASSWORD: ${{ secrets.MACOS_SIGNING_CERT_PASSWORD }}
+        run: ./scripts/import-signing-cert.sh >> "$GITHUB_ENV"
+
+      - name: Warn about ad-hoc signing
+        if: env.HAS_CERT != 'true'
+        run: echo "::warning::MACOS_SIGNING_CERT_P12 not set; building ad-hoc signed. Accessibility must be re-granted after each upgrade."
+
+      - name: Build and sign
+        run: ./scripts/bundle.sh
+
+      - name: Checksum
+        run: |
+          SHA256=$(shasum -a 256 "build/ClipboardHistory-${VERSION}.zip" | awk '{print $1}')
+          echo "SHA256=$SHA256" >> "$GITHUB_ENV"
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "build/ClipboardHistory-${VERSION}.zip" \
+            --title "Clipboard History ${VERSION}" --generate-notes
+          # Private repo: the cask downloads through the API asset URL with a token.
+          ASSET_URL=$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${GITHUB_REF_NAME}" \
+            --jq '.assets[] | select(.name == "ClipboardHistory-'"${VERSION}"'.zip") | .url')
+          echo "ASSET_URL=$ASSET_URL" >> "$GITHUB_ENV"
+
+      - name: Update Homebrew cask
+        if: env.HAS_TAP_KEY == 'true'
+        env:
+          TAP_DEPLOY_KEY: ${{ secrets.TAP_DEPLOY_KEY }}
+        run: |
+          # Write-enabled deploy key scoped to jorgenbs/homebrew-tap only.
+          KEY_FILE="$RUNNER_TEMP/tap_deploy_key"
+          printf '%s\n' "$TAP_DEPLOY_KEY" > "$KEY_FILE"
+          chmod 600 "$KEY_FILE"
+          export GIT_SSH_COMMAND="ssh -i $KEY_FILE -o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+          git clone git@github.com:jorgenbs/homebrew-tap.git tap
+          mkdir -p tap/Casks
+          ./scripts/render-cask.sh "$VERSION" "$SHA256" "$ASSET_URL" > tap/Casks/clipboard-history.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/clipboard-history.rb
+          git commit -m "clipboard-history ${VERSION}"
+          git push
+
+      - name: Cask for manual update
+        if: env.HAS_TAP_KEY != 'true'
+        run: |
+          echo "::warning::TAP_DEPLOY_KEY not set; update jorgenbs/homebrew-tap manually with the cask in the job summary."
+          {
+            echo '### Casks/clipboard-history.rb'
+            echo '```ruby'
+            ./scripts/render-cask.sh "$VERSION" "$SHA256" "$ASSET_URL"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Remove temporary keychain
+        if: always() && env.KEYCHAIN != ''
+        run: security delete-keychain "$KEYCHAIN" || true
