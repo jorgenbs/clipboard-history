@@ -52,12 +52,16 @@ brew install --cask jorgenbs/tap/clipboard-history
 open "/Applications/Clipboard History.app"
 ```
 
-**Accessibility (for auto-paste).** On first launch, the app asks for Accessibility access. Turn it on in System Settings › Privacy & Security › Accessibility. Until then, Return copies the clip and you paste with ⌘V yourself.
+**Accessibility (for auto-paste).** On first launch, the app asks for Accessibility access. Turn it on in System Settings › Privacy & Security › Accessibility. If Clipboard History isn't listed, click **+**, press ⌘⇧G and enter `/Applications/Clipboard History.app`. Until then, Return copies the clip and you paste with ⌘V yourself.
 
 > [!NOTE]
 > The app is **self-signed, not notarized** (no paid Apple Developer account). The cask removes the quarantine flag so it opens without a Gatekeeper prompt. If macOS still blocks it, go to Privacy & Security and click **Open Anyway**. Read the source and build it yourself if you'd rather not trust a binary: it's about 2,000 lines of Swift with no dependencies.
 
-Releases are signed with the same certificate, so the Accessibility grant normally survives upgrades. If auto-paste ever stops working (the app is still listed and switched on, but nothing gets pasted), remove the app from the Accessibility list with **–** and add it again.
+Releases are signed with the same certificate, so the Accessibility grant survives upgrades. If Return beeps instead of pasting and the menu shows *Grant Accessibility to enable auto-paste…*, the switch in System Settings belongs to a different build of the app, for example one you built yourself. The switch can still look on. Reset the permission, then add the app again as described above:
+
+```sh
+tccutil reset Accessibility com.jorgenbs.ClipboardHistory
+```
 
 ## Keys
 
