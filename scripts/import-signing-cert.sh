@@ -15,6 +15,10 @@ security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >&2
 security import "$P12_FILE" -k "$KEYCHAIN" -P "$MACOS_SIGNING_CERT_PASSWORD" -T /usr/bin/codesign >&2
 security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
 rm -f "$P12_FILE"
+# codesign looks up the private key through the keychain search list, so add ours to it.
+existing=()
+while IFS= read -r kc; do existing+=("$kc"); done < <(security list-keychains -d user | sed -e 's/^[[:space:]]*"//' -e 's/"$//')
+security list-keychains -d user -s "$KEYCHAIN" "${existing[@]}" >&2
 
 # Self-signed certs aren't "valid" identities to `find-identity -v`, so sign by SHA-1 fingerprint.
 IDENTITY="$(security find-certificate -a -Z "$KEYCHAIN" | awk '/SHA-1 hash:/ {print $NF; exit}')"
